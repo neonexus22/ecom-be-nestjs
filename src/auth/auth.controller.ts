@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
+import { UserPayload } from './types/user.types';
 
 @Controller('auth')
 @UsePipes(new ValidationPipe())
@@ -24,6 +25,6 @@ export class AuthController {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    return this.authService.login(user);
+    return this.authService.login(user as UserPayload);
   }
 }

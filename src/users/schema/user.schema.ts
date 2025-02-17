@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Schema } from 'mongoose';
+import { Schema, Document } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 
 export const UserSchema = new Schema({
