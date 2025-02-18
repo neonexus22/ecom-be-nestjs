@@ -5,6 +5,7 @@ import {
   Body,
   Controller,
   DefaultValuePipe,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -22,11 +23,15 @@ import { CreateProductDto } from './dto/CreateProductDto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { EmailService } from 'src/email/email.service';
 
 @Controller('products')
 @UsePipes(new ValidationPipe())
 export class ProductsController {
-  constructor(private readonly productService: ProductsService) {}
+  constructor(
+    private readonly productService: ProductsService,
+    private readonly emailService: EmailService,
+  ) {}
 
   @Get()
   // @UseGuards(JwtAuthGuard)
@@ -49,8 +54,6 @@ export class ProductsController {
       if (maxPrice) filter.price.$lte = maxPrice;
     }
 
-    console.log({ filter });
-
     return this.productService.getAllProducts(
       page,
       limit,
@@ -66,11 +69,19 @@ export class ProductsController {
   }
 
   @Post()
-  addProduct(@Body() createProductDto: CreateProductDto) {
-    return this.productService.addProduct(
+  async addProduct(@Body() createProductDto: CreateProductDto) {
+    const product = this.productService.addProduct(
       createProductDto.name,
       createProductDto.price,
     );
+    console.log('start ********************************');
+    await this.emailService.sendEmail(
+      'admin@example.com',
+      'New Product Added',
+      `A new product ${createProductDto.name} has been added}`,
+    );
+    console.log('end ********************************');
+    return product;
   }
 
   @Post('upload')
@@ -108,5 +119,10 @@ export class ProductsController {
       message: 'File uploaded successfully',
       file: file?.filename,
     };
+  }
+
+  @Delete(':id')
+  deleteProduct(@Param('id') id: string) {
+    return this.productService.removeProduct(id);
   }
 }

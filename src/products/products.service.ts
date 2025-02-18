@@ -1,4 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Product } from './schemas/product.schema';
@@ -69,5 +70,16 @@ export class ProductsService {
   addProduct(name: string, price: number) {
     const newProduct = new this.productModel({ name, price });
     return newProduct.save();
+  }
+
+  async removeProduct(id: string) {
+    const product = await this.getProductById(id);
+    if (product) {
+      await this.productModel.deleteOne(product);
+      return {
+        message: 'Product deleted successfully',
+      };
+    }
+    throw new BadRequestException('Product not found');
   }
 }
