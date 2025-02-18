@@ -4,9 +4,12 @@ import {
   BadRequestException,
   Body,
   Controller,
+  DefaultValuePipe,
   Get,
   Param,
+  ParseIntPipe,
   Post,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -27,8 +30,34 @@ export class ProductsController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  getAllProducts() {
-    return this.productService.getAllProducts();
+  getAllProducts(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('sortBy', new DefaultValuePipe('name')) sortBy: string,
+    @Query('sortOrder', new DefaultValuePipe('asc')) sortOrder: 'asc' | 'desc',
+    @Query('name') name?: string,
+    @Query('minPrice') minPrice?: number,
+    @Query('maxPrice') maxPrice?: number,
+  ) {
+    const filter: { [key: string]: any } = {};
+    if (name) {
+      filter.name = { $regex: name, $options: 'i' };
+    }
+    if (minPrice || maxPrice) {
+      filter.price = {};
+      if (minPrice) filter.price.$gte = minPrice;
+      if (maxPrice) filter.price.$lte = maxPrice;
+    }
+
+    console.log({ filter });
+
+    return this.productService.getAllProducts(
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+      filter,
+    );
   }
 
   @Get(':id')
