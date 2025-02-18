@@ -10,6 +10,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-store';
+import { NotificationsGateway } from './notifications/notifications.gateway';
 
 @Module({
   imports: [
@@ -40,6 +41,6 @@ import { redisStore } from 'cache-manager-redis-store';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, NotificationsGateway],
 })
 export class AppModule {}
