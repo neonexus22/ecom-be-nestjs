@@ -15,9 +15,19 @@ import { TasksModule } from './tasks/tasks.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BullModule } from '@nestjs/bull';
 import { EmailModule } from './email/email.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 10,
+          limit: 2, // Max number of requests per minute
+        },
+      ],
+    }),
     ConfigModule.forRoot({
       // Config access of .env file in the app
       isGlobal: true,
@@ -56,6 +66,13 @@ import { EmailModule } from './email/email.module';
     EmailModule,
   ],
   controllers: [AppController],
-  providers: [AppService, NotificationsGateway],
+  providers: [
+    AppService,
+    NotificationsGateway,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard, // Use ThrottlerGuard for rate limiting
+    },
+  ],
 })
 export class AppModule {}

@@ -12,20 +12,22 @@ import {
   Post,
   Query,
   UploadedFile,
-  // UseGuards,
+  UseGuards,
   UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/CreateProductDto';
-// import { JwtAuthGuard } from 'src/auth/jwt-auth-guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { EmailService } from 'src/email/email.service';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { JwtAuthGuard } from 'src/auth/jwt-auth-guard';
 
 @Controller('products')
+@UseGuards(ThrottlerGuard)
 @UsePipes(new ValidationPipe())
 export class ProductsController {
   constructor(
@@ -34,7 +36,7 @@ export class ProductsController {
   ) {}
 
   @Get()
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   getAllProducts(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
@@ -74,13 +76,11 @@ export class ProductsController {
       createProductDto.name,
       createProductDto.price,
     );
-    console.log('start ********************************');
     await this.emailService.sendEmail(
       'admin@example.com',
       'New Product Added',
       `A new product ${createProductDto.name} has been added}`,
     );
-    console.log('end ********************************');
     return product;
   }
 
